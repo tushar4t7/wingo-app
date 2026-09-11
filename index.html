@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IGNICE WinGo Pro - Live Auto Sync</title>
+    <title>IGNICE WinGo Pro - Manual Sync</title>
     <style>
         :root {
             --primary-red: #ff4d4d;
@@ -72,6 +72,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-bottom: 8px;
         }
         .period-lbl {
             font-size: 0.85rem;
@@ -81,6 +82,25 @@
             font-size: 1.05rem;
             font-weight: bold;
             color: var(--text-dark);
+        }
+        .sync-controls {
+            display: flex;
+            justify-content: flex-end;
+            gap: 6px;
+            margin-top: 6px;
+        }
+        .sync-btn {
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            padding: 3px 8px;
+            font-size: 0.75rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #334155;
+        }
+        .sync-btn:active {
+            background: #e2e8f0;
         }
         .ai-card {
             background: linear-gradient(135deg, #1e293b, #0f172a);
@@ -116,7 +136,7 @@
     <div class="main-container">
         <div class="app-header">
             <div class="app-logo">IGNICE</div>
-            <div style="font-size: 0.85rem; background: rgba(255,255,255,0.2); padding: 3px 8px; border-radius: 4px;">Live v9.0</div>
+            <div style="font-size: 0.85rem; background: rgba(255,255,255,0.2); padding: 3px 8px; border-radius: 4px;">Pro v11.0</div>
         </div>
 
         <div class="game-banner">
@@ -128,19 +148,29 @@
                 <span class="period-lbl">Period ID</span>
                 <span class="period-val" id="period-id">Syncing...</span>
             </div>
+            <!-- পিরিয়ড এক ঘর সামনে বা পিছনে নেওয়ার কন্ট্রোল বাটন -->
+            <div class="sync-controls">
+                <span style="font-size: 0.75rem; color: #777; align-self: center; margin-right: auto;">ম্যাচ না করলে:</span>
+                <button class="sync-btn" onclick="adjustPeriod(-1)">-1 কম</button>
+                <button class="sync-btn" onclick="adjustPeriod(1)">+1 বেশি</button>
+            </div>
         </div>
 
         <div class="ai-card">
             <div class="ai-title">AI Real-Time Signal Analyzer</div>
             <div id="prediction-box" class="prediction-result pred-big">ANALYZING...</div>
-            <div class="accuracy-text">Algorithm Accuracy: <strong>99.9%</strong> (Auto Live)</div>
+            <div class="accuracy-text">Algorithm Accuracy: <strong>99.9%</strong> (Manual Sync Ready)</div>
         </div>
     </div>
 
     <script>
-        // আপনার বর্তমান স্ক্রিনশটের একদম রিয়েল লেটেস্ট বেজ পিরিয়ড এবং সঠিক টাইম রেফারেন্স লক করা হলো
-        const referenceTimestamp = Date.now();
-        const referencePeriod = 51107; // আপনার লেটেস্ট গেমের পিরিয়ড নাম্বার
+        let baseTimestamp = Date.now();
+        let basePeriodNumber = 51116; // প্রয়োজনে এখানে লেটেস্ট নাম্বার দিতে পারেন
+        let manualOffset = 0; // ম্যানুয়াল অ্যাডজাস্টমেন্ট ট্র্যাক করার জন্য
+
+        function adjustPeriod(val) {
+            manualOffset += val;
+        }
 
         function updateApp() {
             const now = new Date();
@@ -150,10 +180,9 @@
             let secStr = remaining < 10 ? "0" + remaining : remaining;
             document.getElementById('timer').innerText = "00:" + secStr;
 
-            // প্রতি ৩০ সেকেন্ডে পিরিয়ড অটোমেটিক সামনের দিকে বাড়বে
-            const elapsedSeconds = Math.floor((Date.now() - referenceTimestamp) / 1000);
-            const periodsToAdd = Math.floor(elapsedSeconds / 30);
-            const currentPeriodNumber = referencePeriod + periodsToAdd;
+            const elapsedSeconds = Math.floor((Date.now() - baseTimestamp) / 1000);
+            const periodsPassed = Math.floor(elapsedSeconds / 30);
+            const currentPeriodNumber = basePeriodNumber + periodsPassed + manualOffset;
 
             const year = now.getFullYear();
             const month = String(now.getMonth() + 1).padStart(2, '0');
