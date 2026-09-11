@@ -3,17 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IGNICE WinGo Pro - Ultimate Sync</title>
+    <title>IGNICE WinGo Pro - Overlay Hack</title>
     <style>
         :root {
             --primary-red: #ff4d4d;
             --text-dark: #333333;
-            --text-gray: #777777;
         }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f0f2f5;
-            color: var(--text-dark);
+            background-color: #0f172a;
+            color: white;
             margin: 0;
             padding: 0;
             display: flex;
@@ -22,258 +21,139 @@
         .main-container {
             width: 100%;
             max-width: 450px;
-            background: #ffffff;
+            background: #0f172a;
             min-height: 100vh;
-            box-shadow: 0 0 15px rgba(0,0,0,0.1);
-            padding-bottom: 30px;
+            position: relative;
+            box-shadow: 0 0 15px rgba(0,0,0,0.5);
         }
-        .app-header {
-            background: linear-gradient(135deg, #ff4d4d, #ff1a75);
-            color: white;
-            padding: 12px 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .app-logo {
-            font-size: 1.4rem;
-            font-weight: 900;
-            font-style: italic;
-        }
-        .config-box {
-            background: #fff3cd;
-            padding: 10px 12px;
-            margin: 10px 12px;
-            border-radius: 8px;
-            border: 1px solid #ffeeba;
-            font-size: 0.85rem;
-            color: #856404;
-        }
-        .config-box input {
+        /* আসল গেমের পেজ ব্যাকগ্রাউন্ডে লোড করার ফ্রেম */
+        .game-iframe {
             width: 100%;
-            padding: 6px;
-            margin-top: 5px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
-            font-size: 1rem;
-            font-weight: bold;
+            height: 100vh;
+            border: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            opacity: 0.4; /* হালকা ঝাপসা রাখা যাতে ওভারলে ক্লিয়ার দেখা যায় */
+            pointer-events: auto;
         }
-        .game-banner {
-            background: #ffffff;
-            margin: 12px;
-            border-radius: 12px;
-            border: 1px solid #ffe6e6;
-            box-shadow: 0 4px 12px rgba(255, 77, 77, 0.15);
-            padding: 15px;
-        }
-        .banner-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px dashed #ffd1d1;
-            padding-bottom: 10px;
-            margin-bottom: 10px;
-        }
-        .game-title {
-            font-size: 0.95rem;
-            font-weight: 600;
-            color: var(--text-gray);
-        }
-        .timer-display {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: var(--primary-red);
-            background: #fff0f0;
-            padding: 4px 10px;
-            border-radius: 6px;
-        }
-        .period-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .period-lbl {
-            font-size: 0.85rem;
-            color: var(--text-gray);
-        }
-        .period-val {
-            font-size: 1.05rem;
-            font-weight: bold;
-            color: var(--text-dark);
-        }
-        .ai-card {
-            background: linear-gradient(135deg, #1e293b, #0f172a);
-            color: white;
-            margin: 12px;
-            border-radius: 12px;
-            padding: 16px;
+        /* ওপরে ভেসে থাকা হ্যাক বা সিগন্যাল বক্স (ছবির মতো) */
+        .overlay-box {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 85%;
+            background: rgba(15, 23, 42, 0.95);
+            border: 2px solid #a855f7;
+            border-radius: 16px;
+            padding: 20px;
             text-align: center;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 30px rgba(168, 85, 247, 0.4);
+            z-index: 10;
         }
-        .ai-title {
+        .overlay-title {
+            font-size: 0.85rem;
+            color: #c084fc;
+            font-weight: bold;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            border-bottom: 1px solid rgba(192, 132, 252, 0.2);
+            padding-bottom: 8px;
+        }
+        .period-badge {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 8px 12px;
+            border-radius: 8px;
             font-size: 0.9rem;
-            color: #38bdf8;
-            margin-bottom: 8px;
-            text-transform: uppercase;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255,255,255,0.1);
         }
-        .prediction-result {
-            font-size: 1.8rem;
-            font-weight: bold;
-            padding: 12px;
-            border-radius: 8px;
-            margin: 10px 0;
+        .prediction-display {
+            font-size: 2.2rem;
+            font-weight: 900;
+            color: #ef4444;
+            text-shadow: 0 0 15px rgba(239, 68, 68, 0.6);
+            margin: 15px 0;
+            letter-spacing: 2px;
         }
-        .pred-big { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid #10b981; }
-        .pred-small { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid #ef4444; }
-        .accuracy-text {
+        .accuracy-bar {
             font-size: 0.8rem;
-            color: #94a3b8;
+            color: #38bdf8;
+            margin-bottom: 15px;
         }
-        .history-section {
-            margin: 12px;
-            background: #ffffff;
-            border-radius: 12px;
-            border: 1px solid #e2e8f0;
-            overflow: hidden;
+        .btn-group {
+            display: flex;
+            gap: 10px;
         }
-        .history-header {
-            background: #ff4d4d;
-            color: white;
-            padding: 10px 15px;
+        .btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
             font-weight: bold;
-            font-size: 0.95rem;
+            cursor: pointer;
         }
-        .history-table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: center;
-            font-size: 0.85rem;
-        }
-        .history-table th {
-            background: #f8fafc;
-            color: #64748b;
-            padding: 8px;
-            border-bottom: 1px solid #e2e8f0;
-        }
-        .history-table td {
-            padding: 8px;
-            border-bottom: 1px solid #f1f5f9;
-        }
-        .tag-big { color: #10b981; font-weight: bold; }
-        .tag-small { color: #ef4444; font-weight: bold; }
+        .btn-exit { background: #ef4444; color: white; }
+        .btn-hide { background: #334155; color: white; }
     </style>
 </head>
 <body>
     <div class="main-container">
-        <div class="app-header">
-            <div class="app-logo">IGNICE</div>
-            <div style="font-size: 0.85rem; background: rgba(255,255,255,0.2); padding: 3px 8px; border-radius: 4px;">Pro Live</div>
-        </div>
+        <!-- আসল গেমের লিংক এখানে বসবে যাতে রিয়েল ডাটা ব্যাকগ্রাউন্ডে থাকে -->
+        <!-- (বিঃদ্রঃ কিছু গেম সিকিউরিটি কারণে আইফ্রেমে লোড হতে বাধা দিতে পারে) -->
+        <iframe class="game-iframe" id="gameFrame" src="about:blank"></iframe>
 
-        <div class="config-box">
-            <span>গেমের বর্তমান লাইভ পিরিয়ড নাম্বারটি এখানে দিন:</span>
-            <input type="number" id="manual-period-input" value="20260911100051701" oninput="updateBasePeriod()">
-        </div>
-
-        <div class="game-banner">
-            <div class="banner-top">
-                <span class="game-title">WinGo 30sec</span>
-                <div class="timer-display" id="timer">00:30</div>
+        <!-- ছবির মতো হ্যাক ওভারলে উইন্ডো -->
+        <div class="overlay-box" id="overlayBox">
+            <div class="overlay-title">SH TEAM SERVER HACK<br><span style="font-size: 0.7rem; color: #94a3b8;">SERVER CONNECT ENGINE</span></div>
+            
+            <div class="period-badge">
+                PERIOD: <span id="live-period" style="font-weight: bold; color: white;">Connecting...</span>
             </div>
-            <div class="period-row">
-                <span class="period-lbl">Period ID</span>
-                <span class="period-val" id="period-id">Syncing...</span>
+
+            <div class="prediction-display" id="signal-text">SMALL</div>
+
+            <div class="accuracy-bar">
+                ACCURACY: <strong style="color: #4ade80;">98%</strong>
             </div>
-        </div>
 
-        <div class="ai-card">
-            <div class="ai-title">AI Real-Time Signal Analyzer</div>
-            <div id="prediction-box" class="prediction-result pred-big">ANALYZING...</div>
-            <div class="accuracy-text">Algorithm Accuracy: <strong>99.4%</strong></div>
-        </div>
-
-        <div class="history-section">
-            <div class="history-header">খেলা রেকর্ড (History)</div>
-            <table class="history-table">
-                <thead>
-                    <tr>
-                        <th>সমস্যা (Period)</th>
-                        <th>সংখ্যা</th>
-                        <th>আকার</th>
-                    </tr>
-                </thead>
-                <tbody id="history-rows">
-                    <!-- রিয়েল ডাটা এখানে শো করবে -->
-                </tbody>
-            </table>
+            <div class="btn-group">
+                <button class="btn btn-exit" onclick="alert('Engine Active')">EXIT</button>
+                <button class="btn btn-hide" onclick="toggleHide()">HIDE</button>
+            </div>
         </div>
     </div>
 
     <script>
-        let baseRealTime = Date.now();
-        let basePeriodId = parseInt(document.getElementById('manual-period-input').value) || 20260911100051701;
+        // ইউজার চাইলে গেমের মূল লিংকটি এখানে আইফ্রেমে বসাতে পারে
+        // যেমন: document.getElementById('gameFrame').src = "გেমের_লিংক_এখানে";
 
-        function updateBasePeriod() {
-            let val = document.getElementById('manual-period-input').value;
-            if(val && val.length > 5) {
-                basePeriodId = parseInt(val);
-                baseRealTime = Date.now();
-            }
-        }
-
-        function updateApp() {
-            const now = Date.now();
-            const elapsedSeconds = Math.floor((now - baseRealTime) / 1000);
-            const periodsPassed = Math.floor(elapsedSeconds / 30);
-            
-            const currentPeriodNumber = basePeriodId + periodsPassed;
-            document.getElementById('period-id').innerText = currentPeriodNumber;
-
-            // কাউন্টডাউন টাইমার (৩০ সেকেন্ড লুপ)
-            const remainingSeconds = 30 - (Math.floor(now / 1000) % 30);
-            let secStr = remainingSeconds < 10 ? "0" + remainingSeconds : remainingSeconds;
-            document.getElementById('timer').innerText = "00:" + secStr;
-
-            // সিগন্যাল বা প্রেডিকশন লজিক
-            let predBox = document.getElementById('prediction-box');
-            if (remainingSeconds >= 27 || remainingSeconds <= 3) {
-                predBox.innerText = "WAITING...";
-                predBox.className = "prediction-result";
-                predBox.style.background = "#334155";
-                predBox.style.color = "#94a3b8";
+        function toggleHide() {
+            let box = document.getElementById('overlayBox');
+            if (box.style.display === 'none') {
+                box.style.display = 'block';
             } else {
-                let isBig = (currentPeriodNumber % 2 !== 0);
-                if (isBig) {
-                    predBox.className = "prediction-result pred-big";
-                    predBox.innerText = "বড় (BIG)";
-                } else {
-                    predBox.className = "prediction-result pred-small";
-                    predBox.innerText = "ছোট (SMALL)";
-                }
+                box.style.display = 'none';
             }
-
-            // গেম হিস্ট্রি টেবিল আপডেট
-            let historyHtml = "";
-            for (let i = 1; i <= 10; i++) {
-                let pastPeriodNum = currentPeriodNumber - i;
-                let pseudoNum = (pastPeriodNum % 2 !== 0) ? 8 : 2; 
-                let sizeText = pseudoNum >= 5 ? "বড়" : "ছোট";
-                let sizeClass = pseudoNum >= 5 ? "tag-big" : "tag-small";
-                
-                historyHtml += `
-                    <tr>
-                        <td style="font-size: 0.75rem; color: #555;">${pastPeriodNum}</td>
-                        <td><strong>${pseudoNum}</strong></td>
-                        <td class="${sizeClass}">${sizeText}</td>
-                    </tr>
-                `;
-            }
-            document.getElementById('history-rows').innerHTML = historyHtml;
         }
 
-        setInterval(updateApp, 1000);
-        updateApp();
+        // ডেমো হিসেবে পিরিয়ড ও সিগন্যাল আপডেট লজিক
+        function updateOverlay() {
+            const now = new Date();
+            const epoch = Math.floor(now.getTime() / 1000);
+            const periodSeq = 51800 + Math.floor((epoch % 86400) / 30);
+            
+            document.getElementById('live-period').innerText = periodSeq;
+            
+            let sig = (periodSeq % 2 === 0) ? "BIG" : "SMALL";
+            let sigBox = document.getElementById('signal-text');
+            sigBox.innerText = sig;
+            sigBox.style.color = (sig === "BIG") ? "#4ade80" : "#ef4444";
+        }
+
+        setInterval(updateOverlay, 1000);
+        updateOverlay();
     </script>
 </body>
 </html>
