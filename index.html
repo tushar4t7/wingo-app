@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IGNICE WinGo Pro - Background Sync</title>
+    <title>IGNICE WinGo Pro - Manual Start Sync</title>
     <style>
         :root {
             --primary-red: #ff4d4d;
@@ -39,6 +39,23 @@
             font-size: 1.4rem;
             font-weight: 900;
             font-style: italic;
+        }
+        .config-box {
+            background: #fff3cd;
+            padding: 10px 12px;
+            margin: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid #ffeeba;
+            font-size: 0.85rem;
+            color: #856404;
+        }
+        .config-box input {
+            width: 100%;
+            padding: 6px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
         }
         .game-banner {
             background: #ffffff;
@@ -152,6 +169,12 @@
             <div style="font-size: 0.85rem; background: rgba(255,255,255,0.2); padding: 3px 8px; border-radius: 4px;">Pro Live</div>
         </div>
 
+        <!-- এখানে তুমি যখন ইচ্ছে গেমের রিয়েল পিরিয়ড নাম্বারটা বসিয়ে দিতে পারবে -->
+        <div class="config-box">
+            <span>লাইভ পিরিয়ড বসানোর ঘর (এখানে গেমের বর্তমান নাম্বারটি লিখুন):</span>
+            <input type="number" id="manual-period-input" value="20260911100051319" onchange="updateBasePeriod()">
+        </div>
+
         <div class="game-banner">
             <div class="banner-top">
                 <span class="game-title">WinGo 30sec</span>
@@ -187,53 +210,34 @@
     </div>
 
     <script>
-        // আপনার গেমের লেটেস্ট পিরিয়ড অনুযায়ী একটি ফিক্সড রেফারেন্স পয়েন্ট ও ইউনিভার্সাল টাইম ম্যাপিং
+        // যখনই পেজ লোড হবে বা ইউজার ইনপুট চেঞ্জ করবে, তখন থেকে কাউন্ট শুরু হবে
+        let baseRealTime = Date.now();
+        let basePeriodId = parseInt(document.getElementById('manual-period-input').value);
+
+        function updateBasePeriod() {
+            let val = document.getElementById('manual-period-input').value;
+            if(val) {
+                basePeriodId = parseInt(val);
+                baseRealTime = Date.now(); // নতুন নাম্বার দেওয়ার সাথে সাথে টাইম রিসেট হবে
+            }
+        }
+
         function updateApp() {
-            const now = new Date();
+            const now = Date.now();
+            const elapsedSeconds = Math.floor((now - baseRealTime) / 1000);
+            const periodsPassed = Math.floor(elapsedSeconds / 30);
             
-            // ইউনিভার্সাল ইউনিক সেকেন্ড কাউন্ট (UTC বা লোকাল টাইম স্ট্যাম্প ভিত্তিক নিখুঁত গাণিতিক লুপ)
-            const totalEpochSeconds = Math.floor(now.getTime() / 1000);
-            
-            // WinGo 30sec গেম প্রতি ৩০ সেকেন্ডে একটি পিরিয়ড পরিবর্তন করে
-            // এর মাধ্যমে অ্যাপ থেকে বের হয়ে গেলেও ব্যাকগ্রাউন্ডে সময় নিখুঁতভাবে কাউন্ট হতে থাকবে
-            const currentPeriodIndex = Math.floor(totalEpochSeconds / 30);
-            
-            // আপনার গেমের পিরিয়ড নাম্বারের সাথে নিখুঁতভাবে মেলানোর জন্য বেস ক্যালভুলেশন
-            // পিরিয়ডের শেষ অংশটি সার্বক্ষণিক রিয়েল গেমের সাথে তাল মিলিয়ে নিখুঁত রাখবে
-            const year = now.getFullYear();
-            const month = String(now.getMonth() + 1).padStart(2, '0');
-            const day = String(now.getDate()).padStart(2, '0');
-            
-            // একটি নির্দিষ্ট স্টার্ট ইন্ডেক্স যা গেমের নাম্বারের সাথে হুবহু ম্যাচ করবে
-            // দিন শুরুর পর থেকে অতিবাহিত মোট ৩০ সেকেন্ডের ব্লক
-            const startOfDaySeconds = (now.getHours() * 3600) + (now.getMinutes() * 60) + now.getSeconds();
-            const periodsToday = Math.floor(startOfDaySeconds / 30);
-            
-         // আপনার দেওয়া আগের স্ক্রিনশটের পিরিয়ড নাম্বারের সাথে নিখুঁত অফসেট মেলবন্ধন
-            const basePeriodNumber = parseInt(`${year}${month}${day}10000000`) + periodsToday + 51211 - Math.floor(2518 / 30); // ডায়নামিক রিয়েল-টাইম সিঙ্ক
-            
-            // আরও সহজ ও নিখুঁতভাবে সার্বক্ষণিক মিল রাখার জন্য ডাইরেক্ট ইপোক ক্যালকুলেশন:
-            const exactPeriodNumber = 2026091110000000 + (periodsToday * 1) + 51219 - 34970; // রিয়েল গেম আইডি ম্যাচিং ফর্মুলা
-            // যেহেতু আপনার গেমের ফরম্যাট YYYYMMDD1000XXXXX, তাই নিচের সিস্টেমে এটি সবসময় নির্ভুল থাকবে:
-            const todayCode = `${year}${month}${day}1000`;
-            
-            // নিখুঁত পিরিয়ড আইডি জেনারেটর (সার্ভার টাইমের মতো ইন্ডিপেন্ডেন্ট)
-            // ১ দিন = ২৮৮00 টি ৩০ সেকেন্ডের পিরিয়ড। ইউনিভার্সাল ম্যাথ দিয়ে হিসাব করা হলো:
-            const dayBaseIndex = Math.floor((now.getTime() - new Date(year, now.getMonth(), now.getDate()).getTime()) / 30000);
-            
-            // আপনার স্ক্রিনশটের লেটেস্ট নাম্বারের সাথে নিখুঁতভাবে ফিক্স করার মূল কোড:
-            // বর্তমান সময়ের ওপর ভিত্তি করে রিয়েল পিরিয়ড সিরিয়াল বের করা
-            const calculatedPeriod = 51219 + (dayBaseIndex - 34970); // আপনার বর্তমান সময়ের সাথে সিঙ্ক করা হলো
-            const finalPeriodId = `${todayCode}${calculatedPeriod}`;
+            // ইউজার যে নাম্বারটা দিয়েছে, সেখান থেকেই পিরিয়ড সামনের দিকে বাড়বে
+            const currentPeriodNumber = basePeriodId + periodsPassed;
 
-            document.getElementById('period-id').innerText = finalPeriodId;
+            document.getElementById('period-id').innerText = currentPeriodNumber;
 
-            // কাউন্টডাউন টাইমার (৩০ থেকে ০ সেকেন্ড লুপ)
-            const remainingSeconds = 30 - (now.getSeconds() % 30);
+            // কাউন্টডাউন টাইমার (৩০ সেকেন্ড লুপ)
+            const remainingSeconds = 30 - (Math.floor(now / 1000) % 30);
             let secStr = remainingSeconds < 10 ? "0" + remainingSeconds : remainingSeconds;
             document.getElementById('timer').innerText = "00:" + secStr;
 
-            // সিগন্যাল বা প্রেডিকশন লজিক (বড়/ছোট)
+            // সিগন্যাল বা প্রেডিকশন লজিক
             let predBox = document.getElementById('prediction-box');
             if (remainingSeconds >= 27 || remainingSeconds <= 3) {
                 predBox.innerText = "WAITING...";
@@ -241,7 +245,7 @@
                 predBox.style.background = "#334155";
                 predBox.style.color = "#94a3b8";
             } else {
-                let isBig = (calculatedPeriod % 2 !== 0);
+                let isBig = (currentPeriodNumber % 2 !== 0);
                 if (isBig) {
                     predBox.className = "prediction-result pred-big";
                     predBox.innerText = "বড় (BIG)";
@@ -251,18 +255,17 @@
                 }
             }
 
-            // গেম হিস্ট্রি টেবিল আপডেট (পূর্ববর্তী পিরিয়ডগুলোর তালিকা)
+            // গেম হিস্ট্রি টেবিল আপডেট
             let historyHtml = "";
             for (let i = 1; i <= 10; i++) {
-                let pastPeriodNum = calculatedPeriod - i;
-                let pastId = `${todayCode}${pastPeriodNum}`;
+                let pastPeriodNum = currentPeriodNumber - i;
                 let pseudoNum = (pastPeriodNum % 2 !== 0) ? 8 : 2; 
                 let sizeText = pseudoNum >= 5 ? "বড়" : "ছোট";
                 let sizeClass = pseudoNum >= 5 ? "tag-big" : "tag-small";
                 
                 historyHtml += `
                     <tr>
-                        <td style="font-size: 0.75rem; color: #555;">${pastId}</td>
+                        <td style="font-size: 0.75rem; color: #555;">${pastPeriodNum}</td>
                         <td><strong>${pseudoNum}</strong></td>
                         <td class="${sizeClass}">${sizeText}</td>
                     </tr>
@@ -271,7 +274,6 @@
             document.getElementById('history-rows').innerHTML = historyHtml;
         }
 
-        // প্রতি ১ সেকেন্ড পর পর চেক করবে, আর আপনি অ্যাপ থেকে বের হয়ে আবার ঢুকলেও এটি ইনস্ট্যান্ট ঠিক জায়গায় আপডেট হয়ে যাবে
         setInterval(updateApp, 1000);
         updateApp();
     </script>
