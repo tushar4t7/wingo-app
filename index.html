@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IGNICE WinGo Pro - Manual Start Sync</title>
+    <title>IGNICE WinGo Pro - Perfect Sync</title>
     <style>
         :root {
             --primary-red: #ff4d4d;
@@ -169,10 +169,9 @@
             <div style="font-size: 0.85rem; background: rgba(255,255,255,0.2); padding: 3px 8px; border-radius: 4px;">Pro Live</div>
         </div>
 
-        <!-- এখানে তুমি যখন ইচ্ছে গেমের রিয়েল পিরিয়ড নাম্বারটা বসিয়ে দিতে পারবে -->
         <div class="config-box">
             <span>লাইভ পিরিয়ড বসানোর ঘর (এখানে গেমের বর্তমান নাম্বারটি লিখুন):</span>
-            <input type="number" id="manual-period-input" value="20260911100051319" onchange="updateBasePeriod()">
+            <input type="number" id="manual-period-input" value="20260911100051350" onchange="updateBasePeriod()">
         </div>
 
         <div class="game-banner">
@@ -210,7 +209,6 @@
     </div>
 
     <script>
-        // যখনই পেজ লোড হবে বা ইউজার ইনপুট চেঞ্জ করবে, তখন থেকে কাউন্ট শুরু হবে
         let baseRealTime = Date.now();
         let basePeriodId = parseInt(document.getElementById('manual-period-input').value);
 
@@ -218,7 +216,7 @@
             let val = document.getElementById('manual-period-input').value;
             if(val) {
                 basePeriodId = parseInt(val);
-                baseRealTime = Date.now(); // নতুন নাম্বার দেওয়ার সাথে সাথে টাইম রিসেট হবে
+                baseRealTime = Date.now();
             }
         }
 
@@ -227,9 +225,7 @@
             const elapsedSeconds = Math.floor((now - baseRealTime) / 1000);
             const periodsPassed = Math.floor(elapsedSeconds / 30);
             
-            // ইউজার যে নাম্বারটা দিয়েছে, সেখান থেকেই পিরিয়ড সামনের দিকে বাড়বে
             const currentPeriodNumber = basePeriodId + periodsPassed;
-
             document.getElementById('period-id').innerText = currentPeriodNumber;
 
             // কাউন্টডাউন টাইমার (৩০ সেকেন্ড লুপ)
@@ -255,7 +251,7 @@
                 }
             }
 
-            // গেম হিস্ট্রি টেবিল আপডেট
+            // গেম হিস্ট্রি টেবিল আপডেট (সঠিকভাবে পেছনের সিরিয়াল দেখানোর লজিক)
             let historyHtml = "";
             for (let i = 1; i <= 10; i++) {
                 let pastPeriodNum = currentPeriodNumber - i;
