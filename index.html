@@ -34,10 +34,10 @@
             position: absolute;
             top: 0;
             left: 0;
-            opacity: 0.4; /* হালকা ঝাপসা রাখা যাতে ওভারলে ক্লিয়ার দেখা যায় */
+            opacity: 0.4;
             pointer-events: auto;
         }
-        /* ওপরে ভেসে থাকা হ্যাক বা সিগন্যাল বক্স (ছবির মতো) */
+        /* ওপরে ভেসে থাকা হ্যাক বা সিগন্যাল বক্স */
         .overlay-box {
             position: absolute;
             top: 50%;
@@ -100,11 +100,8 @@
 </head>
 <body>
     <div class="main-container">
-        <!-- আসল গেমের লিংক এখানে বসবে যাতে রিয়েল ডাটা ব্যাকগ্রাউন্ডে থাকে -->
-        <!-- (বিঃদ্রঃ কিছু গেম সিকিউরিটি কারণে আইফ্রেমে লোড হতে বাধা দিতে পারে) -->
         <iframe class="game-iframe" id="gameFrame" src="about:blank"></iframe>
 
-        <!-- ছবির মতো হ্যাক ওভারলে উইন্ডো -->
         <div class="overlay-box" id="overlayBox">
             <div class="overlay-title">SH TEAM SERVER HACK<br><span style="font-size: 0.7rem; color: #94a3b8;">SERVER CONNECT ENGINE</span></div>
             
@@ -126,9 +123,6 @@
     </div>
 
     <script>
-        // ইউজার চাইলে গেমের মূল লিংকটি এখানে আইফ্রেমে বসাতে পারে
-        // যেমন: document.getElementById('gameFrame').src = "გেমের_লিংক_এখানে";
-
         function toggleHide() {
             let box = document.getElementById('overlayBox');
             if (box.style.display === 'none') {
@@ -138,7 +132,6 @@
             }
         }
 
-        // ডেমো হিসেবে পিরিয়ড ও সিগন্যাল আপডেট লজিক
         function updateOverlay() {
             const now = new Date();
             const epoch = Math.floor(now.getTime() / 1000);
