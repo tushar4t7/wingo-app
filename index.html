@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IGNICE WinGo Pro - Auto Epoch Sync</title>
+    <title>IGNICE WinGo Pro - Ultimate Sync</title>
     <style>
         :root {
             --primary-red: #ff4d4d;
@@ -39,6 +39,25 @@
             font-size: 1.4rem;
             font-weight: 900;
             font-style: italic;
+        }
+        .config-box {
+            background: #fff3cd;
+            padding: 10px 12px;
+            margin: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid #ffeeba;
+            font-size: 0.85rem;
+            color: #856404;
+        }
+        .config-box input {
+            width: 100%;
+            padding: 6px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 1rem;
+            font-weight: bold;
         }
         .game-banner {
             background: #ffffff;
@@ -149,7 +168,12 @@
     <div class="main-container">
         <div class="app-header">
             <div class="app-logo">IGNICE</div>
-            <div style="font-size: 0.85rem; background: rgba(255,255,255,0.2); padding: 3px 8px; border-radius: 4px;">Auto Live</div>
+            <div style="font-size: 0.85rem; background: rgba(255,255,255,0.2); padding: 3px 8px; border-radius: 4px;">Pro Live</div>
+        </div>
+
+        <div class="config-box">
+            <span>গেমের বর্তমান লাইভ পিরিয়ড নাম্বারটি এখানে দিন:</span>
+            <input type="number" id="manual-period-input" value="20260911100051701" oninput="updateBasePeriod()">
         </div>
 
         <div class="game-banner">
@@ -187,34 +211,27 @@
     </div>
 
     <script>
-        function updateApp() {
-            const now = new Date();
-            
-            // ইউনিভার্সাল বা গ্লোবাল ইপোক টাইম সেকেন্ড হিসাব (গুগল/ইন্টারন্যাশনাল স্ট্যান্ডার্ড টাইম বেসড)
-            const totalEpochSeconds = Math.floor(now.getTime() / 1000);
-            
-            // WinGo 30sec গেমের প্রতি ৩০ সেকেন্ডের পিরিয়ড ব্লক হিসাব
-            const totalPeriods = Math.floor(totalEpochSeconds / 30);
-            
-            const year = now.getFullYear();
-            const month = String(now.getMonth() + 1).padStart(2, '0');
-            const day = String(now.getDate()).padStart(2, '0');
-            
-            // দিন শুরু হওয়ার পর থেকে কত সেকেন্ড পার হয়েছে তার অফসেট হিসাব
-            const startOfDaySeconds = (now.getHours() * 3600) + (now.getMinutes() * 60) + now.getSeconds();
-            const periodsToday = Math.floor(startOfDaySeconds / 30);
-            
-            // সার্বক্ষণিক নিখুঁত মিল রাখার জন্য বেস ফরম্যাট (YYYYMMDD1000 + সিরিয়াল)
-            const todayCode = `${year}${month}${day}1000`;
-            
-            // ইউনিভার্সাল সেকেন্ডের সাথে গেমের সিরিয়ালের নিখুঁত সামঞ্জস্য ম্যাপিং
-            const baseIndex = periodsToday + 1000; // গ্লোবাল টাইম সিঙ্ক শিফট এডজাস্টমেন্ট
-            const currentPeriodNumber = parseInt(`${year}${month}${day}1000`) + periodsToday + 1234; // রিয়েল গ্লোবাল কাউন্টার সিঙ্ক
+        let baseRealTime = Date.now();
+        let basePeriodId = parseInt(document.getElementById('manual-period-input').value) || 20260911100051701;
 
+        function updateBasePeriod() {
+            let val = document.getElementById('manual-period-input').value;
+            if(val && val.length > 5) {
+                basePeriodId = parseInt(val);
+                baseRealTime = Date.now();
+            }
+        }
+
+        function updateApp() {
+            const now = Date.now();
+            const elapsedSeconds = Math.floor((now - baseRealTime) / 1000);
+            const periodsPassed = Math.floor(elapsedSeconds / 30);
+            
+            const currentPeriodNumber = basePeriodId + periodsPassed;
             document.getElementById('period-id').innerText = currentPeriodNumber;
 
             // কাউন্টডাউন টাইমার (৩০ সেকেন্ড লুপ)
-            const remainingSeconds = 30 - (totalEpochSeconds % 30);
+            const remainingSeconds = 30 - (Math.floor(now / 1000) % 30);
             let secStr = remainingSeconds < 10 ? "0" + remainingSeconds : remainingSeconds;
             document.getElementById('timer').innerText = "00:" + secStr;
 
